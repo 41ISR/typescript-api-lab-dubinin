@@ -11,7 +11,16 @@ export const MangaList = () => {
   const [error, setError] = useState<string | null>(null)
   const [offset, setOffset] = useState(0)
   const [searchText, setSearchText] = useState("")
+  const [debouncedSearchText, setDebouncedSearchText] = useState("")
   const limit = 20
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchText(searchText)
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [searchText])
 
   useEffect(() => {
     const fetchManga = async () => {
@@ -22,7 +31,7 @@ export const MangaList = () => {
           "page[limit]": limit,
           "page[offset]": offset,
         }
-        if (searchText) params["filter[text]"] = searchText
+        if (debouncedSearchText) params["filter[text]"] = debouncedSearchText
 
         const data = await getManga(params)
         setMangaList(data.data)
@@ -34,7 +43,7 @@ export const MangaList = () => {
     }
 
     fetchManga()
-  }, [offset, searchText])
+  }, [offset, debouncedSearchText])
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()

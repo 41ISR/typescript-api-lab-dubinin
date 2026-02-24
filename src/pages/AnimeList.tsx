@@ -11,8 +11,17 @@ export const AnimeList = () => {
   const [error, setError] = useState<string | null>(null)
   const [offset, setOffset] = useState(0)
   const [searchText, setSearchText] = useState("")
+  const [debouncedSearchText, setDebouncedSearchText] = useState("")
   const [statusFilter, setStatusFilter] = useState("")
   const limit = 20
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchText(searchText)
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [searchText])
 
   useEffect(() => {
     const fetchAnime = async () => {
@@ -23,7 +32,7 @@ export const AnimeList = () => {
           "page[limit]": limit,
           "page[offset]": offset,
         }
-        if (searchText) params["filter[text]"] = searchText
+        if (debouncedSearchText) params["filter[text]"] = debouncedSearchText
         if (statusFilter) params["filter[status]"] = statusFilter
 
         const data = await getAnime(params)
@@ -36,7 +45,7 @@ export const AnimeList = () => {
     }
 
     fetchAnime()
-  }, [offset, searchText, statusFilter])
+  }, [offset, debouncedSearchText, statusFilter])
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
